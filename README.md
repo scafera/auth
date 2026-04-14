@@ -4,6 +4,12 @@ Authentication and access control for the Scafera framework. Provides session ma
 
 Internally adopts `symfony/http-foundation` Session and `symfony/password-hasher`. Userland code never imports Symfony types — boundary enforcement blocks it at compile time.
 
+This is a **capability package**. It adds optional authentication and access control to a Scafera project. It does not define folder structure or architectural rules — those belong to architecture packages.
+
+## Core Idea
+
+Scafera treats the auth engine as an implementation detail. Your application code interacts with `Authenticator` for login/logout, `Session` for state, `Password` for hashing, and `GuardInterface` for route protection — never touching Symfony's Security, Session, or PasswordHasher components directly. Authentication is user-existence-based (ADR-058): `isAuthenticated()` verifies the user still exists in the provider, not just that a session key is present. Guards are explicit — declared via `#[Protect]` attributes on controllers, not via implicit firewall rules. A build-time compiler pass enforces these boundaries.
+
 ## What it provides
 
 - `Session` — session state management with flash messages
@@ -18,7 +24,18 @@ Internally adopts `symfony/http-foundation` Session and `symfony/password-hasher
 
 - **User existence is the source of truth** — `isAuthenticated()` verifies the user still exists in the provider, not just that a session key is present. One cached DB lookup per request (ADR-058).
 - **Session fixation prevention** — session ID is regenerated on both login and logout.
-- **Explicit guard execution** — guards are declared via `#[Protect]` attributes on controllers, not via implicit firewall rules.
+- **Explicit guard execution** — guards are declared via `#[Protect]` attributes on controllers, not via implicit firewall rules. Options are passed directly to `check()` — no magic attributes.
+
+## Installation
+
+```bash
+composer require scafera/auth
+```
+
+## Requirements
+
+- PHP >= 8.4
+- scafera/kernel
 
 ## Session
 
@@ -103,7 +120,7 @@ final class AdminDashboard
 }
 ```
 
-Guards run in declaration order. Return `null` to allow, or a `ResponseInterface` to deny.
+Guards run in declaration order. Return `null` to allow, or a `ResponseInterface` to deny. Options from `#[Protect]` are passed directly to `check()` — no magic attributes.
 
 ## Global guards
 
@@ -121,8 +138,6 @@ Global guards run before route-specific guards. Excluded paths are matched exact
 
 ## Boundary enforcement
 
-These Symfony imports are blocked in userland `src/`:
-
 | Blocked | Use instead |
 |---------|-------------|
 | `Symfony\Component\HttpFoundation\Session\*` | `Scafera\Auth\Session` |
@@ -131,17 +146,6 @@ These Symfony imports are blocked in userland `src/`:
 | `Symfony\Component\PasswordHasher\*` | `Scafera\Auth\Password` |
 
 Enforced via compiler pass (build time) and validator (`scafera validate`). Detects `use`, `new`, and `extends` patterns.
-
-## Installation
-
-```bash
-composer require scafera/auth
-```
-
-## Requirements
-
-- PHP >= 8.4
-- scafera/kernel
 
 ## License
 
