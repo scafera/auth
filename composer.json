@@ -1,0 +1,30 @@
+{
+    "name": "scafera/auth",
+    "description": "Authentication and access control for the Scafera framework",
+    "type": "symfony-bundle",
+    "license": "MIT",
+    "keywords": ["scafera", "session", "auth", "php"],
+    "homepage": "https://github.com/scafera/auth",
+    "support": {
+        "issues": "https://github.com/scafera/auth/issues",
+        "source": "https://github.com/scafera/auth"
+    },
+    "require": {
+        "php": ">=8.4",
+        "scafera/kernel": "^1.0",
+        "symfony/password-hasher": "^8.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^12.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "Scafera\\Auth\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Scafera\\Auth\\Tests\\": "tests/"
+        }
+    }
+}
