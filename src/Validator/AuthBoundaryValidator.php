@@ -10,6 +10,11 @@ use Scafera\Kernel\Tool\FileFinder;
 
 final class AuthBoundaryValidator implements ValidatorInterface
 {
+    public function getId(): string
+    {
+        return 'auth.boundary';
+    }
+
     public function getName(): string
     {
         return 'Auth Boundary';
