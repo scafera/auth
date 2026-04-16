@@ -4,11 +4,19 @@ Authentication and access control for the Scafera framework. Provides session ma
 
 Internally adopts `symfony/http-foundation` Session and `symfony/password-hasher`. Userland code never imports Symfony types — boundary enforcement blocks it at compile time.
 
+> **Provides:** Authentication and access control for Scafera — `Authenticator` (login/logout), `Session` (state + flash), `Password` (hash / verify / `needsRehash`), `#[Protect]` attribute with `GuardInterface` guards, plus `CookieJar` for secure cookies. User-existence-based authentication per ADR-058.
+>
+> **Depends on:** A Scafera host project that implements `User` and `UserProvider` (how auth finds an identity). When exactly one `UserProvider` implementation exists, it is auto-aliased for injection.
+>
+> **Extension points:**
+> - Contracts — `User`, `UserProvider`, `GuardInterface`
+> - Attribute — `#[Protect(guard: ..., options: [...])]` on controllers
+> - Built-in guards — `SessionGuard` and `RoleGuard`; implement `GuardInterface` for custom guards
+> - Config — `scafera_auth.global` (guards applied to every request), `scafera_auth.exclude` (paths bypassing global guards)
+>
+> **Not responsible for:** User storage (app implements `UserProvider`) · password complexity / policy rules · two-factor auth or passkey flows · session storage backend (Symfony's responsibility) · direct use of `Symfony\Component\Security`, `HttpFoundation\Session`, `PasswordHasher`, `HttpFoundation\Cookie` in userland (blocked by `AuthBoundaryPass` and `AuthBoundaryValidator`).
+
 This is a **capability package**. It adds optional authentication and access control to a Scafera project. It does not define folder structure or architectural rules — those belong to architecture packages.
-
-## Core Idea
-
-Scafera treats the auth engine as an implementation detail. Your application code interacts with `Authenticator` for login/logout, `Session` for state, `Password` for hashing, and `GuardInterface` for route protection — never touching Symfony's Security, Session, or PasswordHasher components directly. Authentication is user-existence-based (ADR-058): `isAuthenticated()` verifies the user still exists in the provider, not just that a session key is present. Guards are explicit — declared via `#[Protect]` attributes on controllers, not via implicit firewall rules. A build-time compiler pass enforces these boundaries.
 
 ## What it provides
 
